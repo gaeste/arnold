@@ -12,7 +12,6 @@
             padding: 0;
         }
 
-```
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -231,15 +230,12 @@
         background: #f39c12;
     }
 </style>
-```
-
 </head>
 <body>
     <div class="container">
         <h1>👔 Mode-AI</h1>
         <p class="subtitle">Ta en bild och få personliga stilförslag</p>
 
-```
     <!-- API-nyckel -->
     <div class="card">
         <div class="api-section">
@@ -421,7 +417,6 @@
                             {
                                 type: 'text',
                                 text: `Du är en personlig stilrådgivare. Analysera personen på bilden och ge konkreta modeförslag.
-```
 
 Beskriv kort:
 
@@ -431,13 +426,12 @@ Beskriv kort:
 1. Färger som skulle passa personen
 
 Var positiv, konkret och personlig i dina förslag. Svara på svenska.`
-}
-]
-}]
-})
-});
+                            }
+                        ]
+                    }]
+                })
+            });
 
-```
             const data = await response.json();
 
             if (!response.ok) {
@@ -461,7 +455,5 @@ Var positiv, konkret och personlig i dina förslag. Svara på svenska.`
         errorSection.classList.remove('hidden');
     }
 </script>
-```
-
 </body>
 </html>
