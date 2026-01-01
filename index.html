@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Kamera-test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+```
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        min-height: 100vh;
+        color: white;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #8b8fa3;
+        font-size: 0.9rem;
+        margin-bottom: 24px;
+    }
+
+    .camera-area {
+        background: #252a41;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .preview-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 3/4;
+        background: #1a1a2e;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .preview-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .placeholder {
+        text-align: center;
+        color: #8b8fa3;
+    }
+
+    .placeholder-icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+    }
+
+    .camera-btn {
+        width: 100%;
+        padding: 16px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .camera-btn:active {
+        transform: scale(0.98);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #3a4066;
+        color: white;
+        margin-top: 12px;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .info-card {
+        background: #252a41;
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+    }
+
+    .info-card h3 {
+        font-size: 0.9rem;
+        color: #667eea;
+        margin-bottom: 8px;
+    }
+
+    .info-card p {
+        font-size: 0.85rem;
+        color: #8b8fa3;
+        line-height: 1.5;
+    }
+
+    .image-info {
+        background: #1a1a2e;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 12px;
+        font-size: 0.8rem;
+        color: #8b8fa3;
+    }
+
+    .image-info span {
+        color: #667eea;
+    }
+
+    /* Dold file input */
+    #cameraInput {
+        display: none;
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Kamera-test</h1>
+        <p class="subtitle">Testa att ta en bild med din mobil</p>
+
+```
+    <div class="camera-area">
+        <div class="preview-container" id="previewContainer">
+            <div class="placeholder" id="placeholder">
+                <div class="placeholder-icon">📷</div>
+                <p>Ingen bild tagen ännu</p>
+            </div>
+            <img id="preview" class="hidden" alt="Förhandsvisning">
+        </div>
+
+        <input type="file" 
+               id="cameraInput" 
+               accept="image/*" 
+               capture="environment">
+
+        <button class="camera-btn btn-primary" id="takePhotoBtn">
+            📸 Ta en bild
+        </button>
+
+        <button class="camera-btn btn-secondary hidden" id="retakeBtn">
+            🔄 Ta en ny bild
+        </button>
+    </div>
+
+    <div class="info-card hidden" id="imageInfo">
+        <h3>Bildinfo</h3>
+        <div class="image-info">
+            <p>Filnamn: <span id="fileName">-</span></p>
+            <p>Storlek: <span id="fileSize">-</span></p>
+            <p>Typ: <span id="fileType">-</span></p>
+            <p>Dimensioner: <span id="dimensions">-</span></p>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <h3>💡 Nästa steg</h3>
+        <p>När kameran fungerar kan vi koppla på AI-analys för att få modeförslag baserat på bilden!</p>
+    </div>
+</div>
+
+<script>
+    const cameraInput = document.getElementById('cameraInput');
+    const takePhotoBtn = document.getElementById('takePhotoBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const preview = document.getElementById('preview');
+    const placeholder = document.getElementById('placeholder');
+    const imageInfo = document.getElementById('imageInfo');
+
+    // Klicka på "Ta en bild"-knappen
+    takePhotoBtn.addEventListener('click', () => {
+        cameraInput.click();
+    });
+
+    // Klicka på "Ta en ny bild"-knappen
+    retakeBtn.addEventListener('click', () => {
+        cameraInput.click();
+    });
+
+    // Hantera när en bild väljs/tas
+    cameraInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        
+        if (file) {
+            // Visa förhandsvisning
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                retakeBtn.classList.remove('hidden');
+                imageInfo.classList.remove('hidden');
+
+                // Hämta dimensioner när bilden laddats
+                preview.onload = () => {
+                    document.getElementById('dimensions').textContent = 
+                        `${preview.naturalWidth} × ${preview.naturalHeight} px`;
+                };
+            };
+            
+            reader.readAsDataURL(file);
+
+            // Visa filinfo
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileType').textContent = file.type;
+        }
+    });
+
+    // Formatera filstorlek
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+</script>
+```
+
+</body>
+</html>
