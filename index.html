@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Kamera-test</title>
+    <title>Mode-AI</title>
     <style>
         * {
             box-sizing: border-box;
@@ -40,7 +40,7 @@
         margin-bottom: 24px;
     }
 
-    .camera-area {
+    .card {
         background: #252a41;
         border-radius: 16px;
         padding: 20px;
@@ -76,7 +76,7 @@
         margin-bottom: 12px;
     }
 
-    .camera-btn {
+    .btn {
         width: 100%;
         padding: 16px 24px;
         font-size: 1rem;
@@ -91,8 +91,13 @@
         transition: transform 0.1s, opacity 0.2s;
     }
 
-    .camera-btn:active {
+    .btn:active {
         transform: scale(0.98);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 
     .btn-primary {
@@ -106,45 +111,124 @@
         margin-top: 12px;
     }
 
+    .btn-success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        margin-top: 12px;
+    }
+
     .hidden {
         display: none !important;
     }
 
-    .info-card {
-        background: #252a41;
-        border-radius: 12px;
-        padding: 16px;
-        margin-top: 16px;
+    #cameraInput {
+        display: none;
     }
 
-    .info-card h3 {
-        font-size: 0.9rem;
-        color: #667eea;
+    .api-section {
+        margin-bottom: 16px;
+    }
+
+    .api-section label {
+        display: block;
+        font-size: 0.85rem;
+        color: #8b8fa3;
         margin-bottom: 8px;
     }
 
-    .info-card p {
-        font-size: 0.85rem;
-        color: #8b8fa3;
-        line-height: 1.5;
+    .api-input {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 1rem;
+        border: 2px solid #3a4066;
+        border-radius: 10px;
+        background: #1a1a2e;
+        color: white;
+        outline: none;
+        transition: border-color 0.2s;
     }
 
-    .image-info {
-        background: #1a1a2e;
-        border-radius: 8px;
-        padding: 12px;
-        margin-top: 12px;
+    .api-input:focus {
+        border-color: #667eea;
+    }
+
+    .api-input::placeholder {
+        color: #555;
+    }
+
+    .result-card {
+        background: #252a41;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .result-card h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .result-content {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #e0e0e0;
+        white-space: pre-wrap;
+    }
+
+    .loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+        color: #8b8fa3;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #3a4066;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .error {
+        background: #3d2a2a;
+        border: 1px solid #e74c3c;
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+        color: #ff8a80;
+        font-size: 0.9rem;
+    }
+
+    .info-text {
         font-size: 0.8rem;
         color: #8b8fa3;
+        margin-top: 8px;
     }
 
-    .image-info span {
-        color: #667eea;
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
     }
 
-    /* Dold file input */
-    #cameraInput {
-        display: none;
+    .status-dot.ready {
+        background: #38ef7d;
+    }
+
+    .status-dot.waiting {
+        background: #f39c12;
     }
 </style>
 ```
@@ -152,15 +236,32 @@
 </head>
 <body>
     <div class="container">
-        <h1>📸 Kamera-test</h1>
-        <p class="subtitle">Testa att ta en bild med din mobil</p>
+        <h1>👔 Mode-AI</h1>
+        <p class="subtitle">Ta en bild och få personliga stilförslag</p>
 
 ```
-    <div class="camera-area">
+    <!-- API-nyckel -->
+    <div class="card">
+        <div class="api-section">
+            <label for="apiKey">
+                <span class="status-dot waiting" id="statusDot"></span>
+                Claude API-nyckel
+            </label>
+            <input type="password" 
+                   id="apiKey" 
+                   class="api-input" 
+                   placeholder="sk-ant-api03-..."
+                   autocomplete="off">
+            <p class="info-text">Nyckeln sparas bara lokalt i din webbläsare</p>
+        </div>
+    </div>
+
+    <!-- Kamera -->
+    <div class="card">
         <div class="preview-container" id="previewContainer">
             <div class="placeholder" id="placeholder">
                 <div class="placeholder-icon">📷</div>
-                <p>Ingen bild tagen ännu</p>
+                <p>Ta en bild för analys</p>
             </div>
             <img id="preview" class="hidden" alt="Förhandsvisning">
         </div>
@@ -170,28 +271,38 @@
                accept="image/*" 
                capture="environment">
 
-        <button class="camera-btn btn-primary" id="takePhotoBtn">
+        <button class="btn btn-primary" id="takePhotoBtn">
             📸 Ta en bild
         </button>
 
-        <button class="camera-btn btn-secondary hidden" id="retakeBtn">
+        <button class="btn btn-success hidden" id="analyzeBtn">
+            ✨ Analysera min stil
+        </button>
+
+        <button class="btn btn-secondary hidden" id="retakeBtn">
             🔄 Ta en ny bild
         </button>
     </div>
 
-    <div class="info-card hidden" id="imageInfo">
-        <h3>Bildinfo</h3>
-        <div class="image-info">
-            <p>Filnamn: <span id="fileName">-</span></p>
-            <p>Storlek: <span id="fileSize">-</span></p>
-            <p>Typ: <span id="fileType">-</span></p>
-            <p>Dimensioner: <span id="dimensions">-</span></p>
+    <!-- Resultat -->
+    <div id="resultSection" class="hidden">
+        <div class="result-card">
+            <h3>✨ Dina stilförslag</h3>
+            <div class="result-content" id="resultContent"></div>
         </div>
     </div>
 
-    <div class="info-card">
-        <h3>💡 Nästa steg</h3>
-        <p>När kameran fungerar kan vi koppla på AI-analys för att få modeförslag baserat på bilden!</p>
+    <!-- Loading -->
+    <div id="loadingSection" class="hidden">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Analyserar din stil...</p>
+        </div>
+    </div>
+
+    <!-- Error -->
+    <div id="errorSection" class="hidden">
+        <div class="error" id="errorMessage"></div>
     </div>
 </div>
 
@@ -199,56 +310,155 @@
     const cameraInput = document.getElementById('cameraInput');
     const takePhotoBtn = document.getElementById('takePhotoBtn');
     const retakeBtn = document.getElementById('retakeBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
     const preview = document.getElementById('preview');
     const placeholder = document.getElementById('placeholder');
-    const imageInfo = document.getElementById('imageInfo');
+    const apiKeyInput = document.getElementById('apiKey');
+    const statusDot = document.getElementById('statusDot');
+    const resultSection = document.getElementById('resultSection');
+    const resultContent = document.getElementById('resultContent');
+    const loadingSection = document.getElementById('loadingSection');
+    const errorSection = document.getElementById('errorSection');
+    const errorMessage = document.getElementById('errorMessage');
 
-    // Klicka på "Ta en bild"-knappen
-    takePhotoBtn.addEventListener('click', () => {
-        cameraInput.click();
+    let currentImageBase64 = null;
+
+    // Ladda sparad API-nyckel
+    const savedKey = localStorage.getItem('claude_api_key');
+    if (savedKey) {
+        apiKeyInput.value = savedKey;
+        statusDot.classList.remove('waiting');
+        statusDot.classList.add('ready');
+    }
+
+    // Spara API-nyckel när den ändras
+    apiKeyInput.addEventListener('input', () => {
+        const key = apiKeyInput.value.trim();
+        if (key) {
+            localStorage.setItem('claude_api_key', key);
+            statusDot.classList.remove('waiting');
+            statusDot.classList.add('ready');
+        } else {
+            localStorage.removeItem('claude_api_key');
+            statusDot.classList.remove('ready');
+            statusDot.classList.add('waiting');
+        }
     });
 
-    // Klicka på "Ta en ny bild"-knappen
-    retakeBtn.addEventListener('click', () => {
-        cameraInput.click();
-    });
+    // Kamera-knappar
+    takePhotoBtn.addEventListener('click', () => cameraInput.click());
+    retakeBtn.addEventListener('click', () => cameraInput.click());
 
-    // Hantera när en bild väljs/tas
+    // Hantera bild
     cameraInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         
         if (file) {
-            // Visa förhandsvisning
             const reader = new FileReader();
             
             reader.onload = (e) => {
-                preview.src = e.target.result;
+                const base64Full = e.target.result;
+                currentImageBase64 = base64Full.split(',')[1]; // Ta bort data:image/...;base64,
+                
+                preview.src = base64Full;
                 preview.classList.remove('hidden');
                 placeholder.classList.add('hidden');
                 retakeBtn.classList.remove('hidden');
-                imageInfo.classList.remove('hidden');
-
-                // Hämta dimensioner när bilden laddats
-                preview.onload = () => {
-                    document.getElementById('dimensions').textContent = 
-                        `${preview.naturalWidth} × ${preview.naturalHeight} px`;
-                };
+                analyzeBtn.classList.remove('hidden');
+                
+                // Göm tidigare resultat
+                resultSection.classList.add('hidden');
+                errorSection.classList.add('hidden');
             };
             
             reader.readAsDataURL(file);
-
-            // Visa filinfo
-            document.getElementById('fileName').textContent = file.name;
-            document.getElementById('fileSize').textContent = formatFileSize(file.size);
-            document.getElementById('fileType').textContent = file.type;
         }
     });
 
-    // Formatera filstorlek
-    function formatFileSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    // Analysera bild
+    analyzeBtn.addEventListener('click', async () => {
+        const apiKey = apiKeyInput.value.trim();
+        
+        if (!apiKey) {
+            showError('Ange din Claude API-nyckel först');
+            return;
+        }
+        
+        if (!currentImageBase64) {
+            showError('Ta en bild först');
+            return;
+        }
+
+        // Visa loading
+        loadingSection.classList.remove('hidden');
+        resultSection.classList.add('hidden');
+        errorSection.classList.add('hidden');
+        analyzeBtn.disabled = true;
+
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-access': 'true'
+                },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 1024,
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image',
+                                source: {
+                                    type: 'base64',
+                                    media_type: 'image/jpeg',
+                                    data: currentImageBase64
+                                }
+                            },
+                            {
+                                type: 'text',
+                                text: `Du är en personlig stilrådgivare. Analysera personen på bilden och ge konkreta modeförslag.
+```
+
+Beskriv kort:
+
+1. Vad personen har på sig just nu
+1. Vilken stil/estetik det lutar åt
+1. 3-5 konkreta förslag på plagg eller accessoarer som skulle komplettera stilen
+1. Färger som skulle passa personen
+
+Var positiv, konkret och personlig i dina förslag. Svara på svenska.`
+}
+]
+}]
+})
+});
+
+```
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error?.message || 'Något gick fel med API-anropet');
+            }
+
+            // Visa resultat
+            resultContent.textContent = data.content[0].text;
+            resultSection.classList.remove('hidden');
+
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            loadingSection.classList.add('hidden');
+            analyzeBtn.disabled = false;
+        }
+    });
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorSection.classList.remove('hidden');
     }
 </script>
 ```
