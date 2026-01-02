@@ -120,7 +120,7 @@
         display: none !important;
     }
 
-    #cameraInput {
+    #cameraInput, #galleryInput {
         display: none;
     }
 
@@ -331,14 +331,23 @@
             <img id="preview" class="hidden" alt="Förhandsvisning">
         </div>
 
-        <input type="file" 
-               id="cameraInput" 
-               accept="image/*" 
+        <input type="file"
+               id="cameraInput"
+               accept="image/*"
                capture="environment">
 
-        <button class="btn btn-primary" id="takePhotoBtn">
-            📸 Ta en bild
-        </button>
+        <input type="file"
+               id="galleryInput"
+               accept="image/*">
+
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-primary" id="takePhotoBtn" style="flex: 1;">
+                📸 Kamera
+            </button>
+            <button class="btn btn-primary" id="galleryBtn" style="flex: 1;">
+                🖼️ Bildbibliotek
+            </button>
+        </div>
 
         <button class="btn btn-success hidden" id="analyzeBtn">
             ✨ Analysera min stil
@@ -373,7 +382,9 @@
 
 <script>
     const cameraInput = document.getElementById('cameraInput');
+    const galleryInput = document.getElementById('galleryInput');
     const takePhotoBtn = document.getElementById('takePhotoBtn');
+    const galleryBtn = document.getElementById('galleryBtn');
     const retakeBtn = document.getElementById('retakeBtn');
     const analyzeBtn = document.getElementById('analyzeBtn');
     const preview = document.getElementById('preview');
@@ -424,33 +435,37 @@
 
     // Kamera-knappar
     takePhotoBtn.addEventListener('click', () => cameraInput.click());
+    galleryBtn.addEventListener('click', () => galleryInput.click());
     retakeBtn.addEventListener('click', () => cameraInput.click());
 
-    // Hantera bild
-    cameraInput.addEventListener('change', (event) => {
+    // Hantera bild (gemensam funktion)
+    function handleImageSelect(event) {
         const file = event.target.files[0];
-        
+
         if (file) {
             const reader = new FileReader();
-            
+
             reader.onload = (e) => {
                 const base64Full = e.target.result;
                 currentImageBase64 = base64Full.split(',')[1]; // Ta bort data:image/...;base64,
-                
+
                 preview.src = base64Full;
                 preview.classList.remove('hidden');
                 placeholder.classList.add('hidden');
                 retakeBtn.classList.remove('hidden');
                 analyzeBtn.classList.remove('hidden');
-                
+
                 // Göm tidigare resultat
                 resultSection.classList.add('hidden');
                 errorSection.classList.add('hidden');
             };
-            
+
             reader.readAsDataURL(file);
         }
-    });
+    }
+
+    cameraInput.addEventListener('change', handleImageSelect);
+    galleryInput.addEventListener('change', handleImageSelect);
 
     // Analysera bild
     analyzeBtn.addEventListener('click', async () => {
