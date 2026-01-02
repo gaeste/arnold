@@ -172,9 +172,34 @@
 
     .result-content {
         font-size: 0.95rem;
-        line-height: 1.6;
+        line-height: 1.7;
         color: #e0e0e0;
-        white-space: pre-wrap;
+    }
+
+    .result-content h1, .result-content h2, .result-content h3 {
+        color: white;
+        margin: 16px 0 8px 0;
+    }
+
+    .result-content h1 { font-size: 1.3rem; }
+    .result-content h2 { font-size: 1.15rem; }
+    .result-content h3 { font-size: 1.05rem; }
+
+    .result-content p {
+        margin-bottom: 12px;
+    }
+
+    .result-content ul, .result-content ol {
+        margin: 12px 0;
+        padding-left: 24px;
+    }
+
+    .result-content li {
+        margin-bottom: 6px;
+    }
+
+    .result-content strong {
+        color: white;
     }
 
     .loading {
@@ -492,7 +517,7 @@ Var positiv, konkret och personlig i dina förslag. Svara på svenska.`;
             if (!resultText) {
                 throw new Error('Kunde inte tolka svaret från Gemini');
             }
-            resultContent.textContent = resultText;
+            resultContent.innerHTML = parseMarkdown(resultText);
             resultSection.classList.remove('hidden');
 
         } catch (error) {
@@ -506,6 +531,37 @@ Var positiv, konkret och personlig i dina förslag. Svara på svenska.`;
     function showError(message) {
         errorMessage.textContent = message;
         errorSection.classList.remove('hidden');
+    }
+
+    function parseMarkdown(text) {
+        return text
+            // Headers
+            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+            // Bold
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            // Italic
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            // Unordered lists
+            .replace(/^\* (.+)$/gm, '<li>$1</li>')
+            .replace(/^- (.+)$/gm, '<li>$1</li>')
+            // Ordered lists
+            .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+            // Wrap consecutive <li> in <ul>
+            .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+            // Paragraphs (double newlines)
+            .replace(/\n\n/g, '</p><p>')
+            // Single newlines within paragraphs
+            .replace(/\n/g, '<br>')
+            // Wrap in paragraph
+            .replace(/^(.+)$/s, '<p>$1</p>')
+            // Clean up empty paragraphs
+            .replace(/<p><\/p>/g, '')
+            .replace(/<p>(<h[123]>)/g, '$1')
+            .replace(/(<\/h[123]>)<\/p>/g, '$1')
+            .replace(/<p>(<ul>)/g, '$1')
+            .replace(/(<\/ul>)<\/p>/g, '$1');
     }
 </script>
 </body>
