@@ -229,6 +229,45 @@
     .status-dot.waiting {
         background: #f39c12;
     }
+
+    .config-toggle {
+        background: transparent;
+        border: 1px solid #3a4066;
+        color: #8b8fa3;
+        padding: 10px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        font-size: 0.9rem;
+        transition: background 0.2s, border-color 0.2s;
+        margin-bottom: 20px;
+    }
+
+    .config-toggle:hover {
+        background: #252a41;
+        border-color: #667eea;
+    }
+
+    .config-toggle .arrow {
+        transition: transform 0.2s;
+    }
+
+    .config-toggle.open .arrow {
+        transform: rotate(180deg);
+    }
+
+    .config-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+
+    .config-content.open {
+        max-height: 200px;
+    }
 </style>
 </head>
 <body>
@@ -236,19 +275,24 @@
         <h1>👔 Mode-AI</h1>
         <p class="subtitle">Ta en bild och få personliga stilförslag</p>
 
-    <!-- API-nyckel -->
-    <div class="card">
-        <div class="api-section">
-            <label for="apiKey">
-                <span class="status-dot waiting" id="statusDot"></span>
-                Google Gemini API-nyckel
-            </label>
-            <input type="password"
-                   id="apiKey"
-                   class="api-input"
-                   placeholder="AIzaSy..."
-                   autocomplete="off">
-            <p class="info-text">Hämta gratis nyckel på <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #667eea;">Google AI Studio</a></p>
+    <!-- Konfig-knapp -->
+    <button class="config-toggle" id="configToggle">
+        <span><span class="status-dot waiting" id="statusDot"></span> Inställningar</span>
+        <span class="arrow">▼</span>
+    </button>
+
+    <!-- API-nyckel (dold som standard) -->
+    <div class="config-content" id="configContent">
+        <div class="card">
+            <div class="api-section">
+                <label for="apiKey">Google Gemini API-nyckel</label>
+                <input type="password"
+                       id="apiKey"
+                       class="api-input"
+                       placeholder="AIzaSy..."
+                       autocomplete="off">
+                <p class="info-text">Hämta gratis nyckel på <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #667eea;">Google AI Studio</a></p>
+            </div>
         </div>
     </div>
 
@@ -316,8 +360,16 @@
     const loadingSection = document.getElementById('loadingSection');
     const errorSection = document.getElementById('errorSection');
     const errorMessage = document.getElementById('errorMessage');
+    const configToggle = document.getElementById('configToggle');
+    const configContent = document.getElementById('configContent');
 
     let currentImageBase64 = null;
+
+    // Konfig-toggle
+    configToggle.addEventListener('click', () => {
+        configToggle.classList.toggle('open');
+        configContent.classList.toggle('open');
+    });
 
     // Ladda sparad API-nyckel
     const savedKey = localStorage.getItem('gemini_api_key');
@@ -325,6 +377,10 @@
         apiKeyInput.value = savedKey;
         statusDot.classList.remove('waiting');
         statusDot.classList.add('ready');
+    } else {
+        // Öppna konfig om ingen nyckel finns
+        configToggle.classList.add('open');
+        configContent.classList.add('open');
     }
 
     // Spara API-nyckel när den ändras
