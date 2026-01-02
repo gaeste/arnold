@@ -203,20 +203,17 @@
     }
 
     .result-content a {
-        color: #667eea;
         text-decoration: none;
-        border-bottom: 1px solid #667eea;
-        transition: color 0.2s, border-color 0.2s;
+        font-size: 1.1em;
+        margin-left: 4px;
+        opacity: 0.8;
+        transition: opacity 0.2s, transform 0.2s;
+        display: inline-block;
     }
 
     .result-content a:hover {
-        color: #8b9cf7;
-        border-color: #8b9cf7;
-    }
-
-    .result-content a::after {
-        content: ' 🛒';
-        font-size: 0.85em;
+        opacity: 1;
+        transform: scale(1.1);
     }
 
     .loading {
@@ -495,12 +492,12 @@
     // Prompts
     const quickPrompt = `Du är en stilrådgivare. Ge 3 korta, konkreta tips på plagg eller accessoarer som skulle passa personen på bilden.
 
-För varje förslag, inkludera en sökländk till Zalando i detta format:
-[Produktnamn](https://www.zalando.se/katalog/?q=sökord)
+För varje förslag, lägg till en liten shoppinglänk med en kundkorg-emoji direkt efter plagget:
+**Plaggnamn** [🛒](https://www.zalando.se/katalog/?q=sökord)
 
-Exempel: [Mörkblå slim jeans](https://www.zalando.se/katalog/?q=mörkblå+slim+jeans+herr)
+Exempel: **Mörkblå slim jeans** [🛒](https://www.zalando.se/katalog/?q=mörkblå+slim+jeans+herr)
 
-Max 3 förslag med länkar. Svara på svenska.`;
+Max 3 förslag. Svara på svenska.`;
 
     const fullPrompt = `Du är en personlig stilrådgivare. Analysera personen på bilden och ge konkreta modeförslag.
 
@@ -510,12 +507,12 @@ Beskriv kort:
 3. 3-5 konkreta förslag på plagg eller accessoarer som skulle komplettera stilen
 4. Färger som skulle passa personen
 
-VIKTIGT: För varje konkret plaggförslag, inkludera en sökländk till Zalando i detta format:
-[Produktnamn](https://www.zalando.se/katalog/?q=sökord)
+VIKTIGT: För varje konkret plaggförslag, lägg till en liten shoppinglänk med kundkorg-emoji:
+**Plaggnamn** [🛒](https://www.zalando.se/katalog/?q=sökord)
 
-Exempel: [Beige trenchcoat](https://www.zalando.se/katalog/?q=beige+trenchcoat+dam)
+Exempel: **Beige trenchcoat** [🛒](https://www.zalando.se/katalog/?q=beige+trenchcoat+dam)
 
-Var positiv, konkret och personlig i dina förslag. Svara på svenska.`;
+Var positiv och personlig. Svara på svenska.`;
 
     // Analysera bild
     async function analyzeImage(prompt) {
