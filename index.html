@@ -202,6 +202,23 @@
         color: white;
     }
 
+    .result-content a {
+        color: #667eea;
+        text-decoration: none;
+        border-bottom: 1px solid #667eea;
+        transition: color 0.2s, border-color 0.2s;
+    }
+
+    .result-content a:hover {
+        color: #8b9cf7;
+        border-color: #8b9cf7;
+    }
+
+    .result-content a::after {
+        content: ' 🛒';
+        font-size: 0.85em;
+    }
+
     .loading {
         display: flex;
         flex-direction: column;
@@ -476,7 +493,14 @@
     galleryInput.addEventListener('change', handleImageSelect);
 
     // Prompts
-    const quickPrompt = `Du är en stilrådgivare. Ge 3 korta, konkreta tips på plagg eller accessoarer som skulle passa personen på bilden. Max 2-3 meningar totalt. Svara på svenska.`;
+    const quickPrompt = `Du är en stilrådgivare. Ge 3 korta, konkreta tips på plagg eller accessoarer som skulle passa personen på bilden.
+
+För varje förslag, inkludera en sökländk till Zalando i detta format:
+[Produktnamn](https://www.zalando.se/catalog/?q=sökord)
+
+Exempel: [Mörkblå slim jeans](https://www.zalando.se/catalog/?q=mörkblå+slim+jeans+herr)
+
+Max 3 förslag med länkar. Svara på svenska.`;
 
     const fullPrompt = `Du är en personlig stilrådgivare. Analysera personen på bilden och ge konkreta modeförslag.
 
@@ -485,6 +509,11 @@ Beskriv kort:
 2. Vilken stil/estetik det lutar åt
 3. 3-5 konkreta förslag på plagg eller accessoarer som skulle komplettera stilen
 4. Färger som skulle passa personen
+
+VIKTIGT: För varje konkret plaggförslag, inkludera en sökländk till Zalando i detta format:
+[Produktnamn](https://www.zalando.se/catalog/?q=sökord)
+
+Exempel: [Beige trenchcoat](https://www.zalando.se/catalog/?q=beige+trenchcoat+dam)
 
 Var positiv, konkret och personlig i dina förslag. Svara på svenska.`;
 
@@ -565,6 +594,8 @@ Var positiv, konkret och personlig i dina förslag. Svara på svenska.`;
 
     function parseMarkdown(text) {
         return text
+            // Links [text](url)
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
             // Headers
             .replace(/^### (.+)$/gm, '<h3>$1</h3>')
             .replace(/^## (.+)$/gm, '<h2>$1</h2>')
